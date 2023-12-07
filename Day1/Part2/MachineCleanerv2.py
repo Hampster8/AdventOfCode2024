@@ -1,31 +1,45 @@
-file_path = '/Users/hampusandersson/Documents/VscodeProjects/AdventOfCode2024/Day1/puzzleinput.txt'
+# Constants representing the bag's capacity for each color
+RED_CAPACITY = 12
+GREEN_CAPACITY = 13
+BLUE_CAPACITY = 14
 
-# Mapping of textual representations of numbers to their numeric equivalents
-number_translations = {
-    "oneight": "18", "twone": "21", "threeight": "38", "fiveight": "58",
-    "sevenine": "79", "eightwo": "82", "eighthree": "83", "nineight": "98",
-    'zero': '0', 'one': '1', 'two': '2', 'three': '3', 'four': '4', 
-    'five': '5', 'six': '6', 'seven': '7', 'eight': '8', 'nine': '9'
-}
+def parse_round_data(round_str):
+    """Parse a round string into a dictionary of color counts."""
+    color_counts = {'red': 0, 'green': 0, 'blue': 0}
+    for part in round_str.split(", "):
+        count, color = part.split(" ")
+        color_counts[color] += int(count)
+    return color_counts
 
-def convert_line_to_digits(line):
-    # Replace textual numbers with digits
-    for text, digit in number_translations.items():
-        line = line.replace(text, digit)
+def is_round_playable(round_data):
+    """Check if a round can be played with the given bag capacity."""
+    return (round_data['red'] <= RED_CAPACITY and
+            round_data['green'] <= GREEN_CAPACITY and
+            round_data['blue'] <= BLUE_CAPACITY)
 
-    # Extract digits from the line
-    extracted_digits = [char for char in line if char.isdigit()]
+def is_game_playable(game_rounds):
+    """Check if all rounds in a game are playable."""
+    for round_str in game_rounds.split("; "):
+        round_data = parse_round_data(round_str)
+        if not is_round_playable(round_data):
+            return False
+    return True
 
-    # Construct a two-digit number from the extracted digits
-    if len(extracted_digits) >= 2:
-        return extracted_digits[0] + extracted_digits[-1]  # First and last digit
-    elif extracted_digits:
-        return extracted_digits[0] * 2  # Repeat the digit if only one is found
-    else:
-        return '00'  # Return '00' if no digits are found
+def sum_playable_game_ids(data):
+    """Calculate the sum of IDs of games that can be played."""
+    sum_of_ids = 0
+    for game in data.strip().split("\n"):
+        game_id_str, game_rounds = game.split(": ")
+        game_id = int(game_id_str.split(" ")[1])
 
-# Summing up all the two-digit numbers from the file
+        if is_game_playable(game_rounds):
+            sum_of_ids += game_id
+
+    return sum_of_ids
+
+# Read data from file and calculate the sum of playable game IDs
+file_path = '/Users/hampusandersson/Documents/VscodeProjects/AdventOfCode2024/Day2/puzzleinput.txt'
 with open(file_path, 'r') as file:
-    total_sum = sum(int(convert_line_to_digits(line.strip().lower())) for line in file)
+    data = file.read()
 
-print(total_sum)
+print("Sum of playable game IDs:", sum_playable_game_ids(data))
